@@ -54,6 +54,9 @@ struct BouncyCar: Mode {
 	//camera:
 	Scene::Camera* camera = nullptr;
 
+	//light
+	Scene::Light* light = nullptr;
+
 	//tiles
 	std::vector<Scene::Transform*> tiles;
 
