@@ -14,13 +14,13 @@
 
 GLuint hexapod_meshes_for_lit_color_texture_program = 0;
 Load< MeshBuffer > hexapod_meshes(LoadTagDefault, []() -> MeshBuffer const * {
-	MeshBuffer const *ret = new MeshBuffer(data_path("hexapod.pnct"));
+	MeshBuffer const *ret = new MeshBuffer(data_path("car.pnct"));
 	hexapod_meshes_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret;
 });
 
 Load< Scene > hexapod_scene(LoadTagDefault, []() -> Scene const * {
-	return new Scene(data_path("hexapod.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
+	return new Scene(data_path("car.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
 		Mesh const &mesh = hexapod_meshes->lookup(mesh_name);
 
 		scene.drawables.emplace_back(transform);
@@ -125,7 +125,7 @@ void PlayMode::update(float elapsed) {
 	wobble += elapsed / 10.0f;
 	wobble -= std::floor(wobble);
 
-	hip->rotation = hip_base_rotation * glm::angleAxis(
+	/*hip->rotation = hip_base_rotation * glm::angleAxis(
 		glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
 		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
@@ -136,7 +136,7 @@ void PlayMode::update(float elapsed) {
 	lower_leg->rotation = lower_leg_base_rotation * glm::angleAxis(
 		glm::radians(10.0f * std::sin(wobble * 3.0f * 2.0f * float(M_PI))),
 		glm::vec3(0.0f, 0.0f, 1.0f)
-	);
+	);*/
 
 	//move camera:
 	{
