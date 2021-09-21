@@ -90,31 +90,7 @@ BouncyCar::~BouncyCar() {
 bool BouncyCar::handle_event(SDL_Event const& evt, glm::uvec2 const& window_size) {
 
 	if (evt.type == SDL_KEYDOWN) {
-		if (evt.key.keysym.sym == SDLK_ESCAPE) {
-			SDL_SetRelativeMouseMode(SDL_FALSE);
-			return true;
-		}
-		else if (evt.key.keysym.sym == SDLK_a) {
-			left.downs += 1;
-			left.pressed = true;
-			return true;
-		}
-		else if (evt.key.keysym.sym == SDLK_d) {
-			right.downs += 1;
-			right.pressed = true;
-			return true;
-		}
-		else if (evt.key.keysym.sym == SDLK_w) {
-			up.downs += 1;
-			up.pressed = true;
-			return true;
-		}
-		else if (evt.key.keysym.sym == SDLK_s) {
-			down.downs += 1;
-			down.pressed = true;
-			return true;
-		}
-		else if (evt.key.keysym.sym == SDLK_SPACE) {
+		if (evt.key.keysym.sym == SDLK_SPACE) {
 			space.downs += 1;
 			space.pressed = true;
 			space.released = false;
@@ -122,45 +98,9 @@ bool BouncyCar::handle_event(SDL_Event const& evt, glm::uvec2 const& window_size
 		}
 	}
 	else if (evt.type == SDL_KEYUP) {
-		if (evt.key.keysym.sym == SDLK_a) {
-			left.pressed = false;
-			return true;
-		}
-		else if (evt.key.keysym.sym == SDLK_d) {
-			right.pressed = false;
-			return true;
-		}
-		else if (evt.key.keysym.sym == SDLK_w) {
-			up.pressed = false;
-			return true;
-		}
-		else if (evt.key.keysym.sym == SDLK_s) {
-			down.pressed = false;
-			return true;
-		}
-		else if (evt.key.keysym.sym == SDLK_SPACE) {
+		if (evt.key.keysym.sym == SDLK_SPACE) {
 			space.pressed = false;
 			space.released = true;
-			return true;
-		}
-	}
-	else if (evt.type == SDL_MOUSEBUTTONDOWN) {
-		if (SDL_GetRelativeMouseMode() == SDL_FALSE) {
-			SDL_SetRelativeMouseMode(SDL_TRUE);
-			return true;
-		}
-	}
-	else if (evt.type == SDL_MOUSEMOTION) {
-		if (SDL_GetRelativeMouseMode() == SDL_TRUE) {
-			glm::vec2 motion = glm::vec2(
-				evt.motion.xrel / float(window_size.y),
-				-evt.motion.yrel / float(window_size.y)
-			);
-			camera->transform->rotation = glm::normalize(
-				camera->transform->rotation
-				* glm::angleAxis(-motion.x * camera->fovy, glm::vec3(0.0f, 1.0f, 0.0f))
-				* glm::angleAxis(motion.y * camera->fovy, glm::vec3(1.0f, 0.0f, 0.0f))
-			);
 			return true;
 		}
 	}
@@ -169,6 +109,10 @@ bool BouncyCar::handle_event(SDL_Event const& evt, glm::uvec2 const& window_size
 }
 
 void BouncyCar::BounceCar() {
+	if (gameCar.isGround) {
+		gameCar.jumpStart = gameCar.transform->position.y;
+	}
+
 	gameCar.isGround = false;
 	gameCar.bounceNum++;
 	gameCar.totalDowns += space.downs;
@@ -187,22 +131,25 @@ void BouncyCar::BounceCar() {
 	float angle = circle_num * glm::pi<float>() / gameCar.jumpTime;
 
 	gameCar.angularSpeed = angle;
+}
 
-	score += space.downs;
-	scoreText = "Current Score: " + std::to_string(score);
+void BouncyCar::CalculateScore() {
+	score = static_cast<uint16_t>(gameCar.jumpStart - gameCar.transform->position.y);
 
-	if (score > 240) {
+	scoreText = "Flying Distance: " + std::to_string(score);
+
+	if (score > 2400) {
 		textColor = glm::u8vec4(0xff, 0xd7, 0x00, 0xff);
 		performanceText = "";
-		for (uint8_t i = 0; i < score / 240; i++) {
-			performanceText += "S ";
+		for (uint8_t i = 0; i < score / 2400; i++) {
+			performanceText += "S";
 		}
-	} 
-	else if (score > 90) {
-		textColor = glm::u8vec4(0x2a, 0x22, 0xd6 ,0xff);
+	}
+	else if (score > 900) {
+		textColor = glm::u8vec4(0x2a, 0x22, 0xd6, 0xff);
 		performanceText = "A";
 	}
-	else if (score > 30) {
+	else if (score > 300) {
 		textColor = glm::u8vec4(0x42, 0x87, 0xe5, 0xff);
 		performanceText = "B";
 	}
@@ -241,6 +188,8 @@ void BouncyCar::update(float elapsed) {
 			else 
 				gameCar.transform->scale = glm::vec3(1.0f);
 
+			
+			CalculateScore();
 			/*std::cout << "Car rotation: " <<
 				gameCar.transform->rotation.w <<
 				" " << gameCar.transform->position.x <<
@@ -258,7 +207,7 @@ void BouncyCar::update(float elapsed) {
 			gameCar.jumpTime = 0.0f;
 
 			score = 0;
-			scoreText = "Current Score: " + std::to_string(score);
+			scoreText = "Flying Distance: " + std::to_string(score);
 			performanceText = "C";
 			textColor = glm::u8vec4(0xff, 0xff, 0xff, 0x00);
 		}
@@ -286,36 +235,8 @@ void BouncyCar::update(float elapsed) {
 						std::endl;
 				}
 			}
-		}
-		
+		}		
 	}
-
-	//move camera:
-	{
-		//combine inputs into a move:
-		constexpr float PlayerSpeed = 30.0f;
-		glm::vec2 move = glm::vec2(0.0f);
-		if (left.pressed && !right.pressed) move.x = -1.0f;
-		if (!left.pressed && right.pressed) move.x = 1.0f;
-		if (down.pressed && !up.pressed) move.y = -1.0f;
-		if (!down.pressed && up.pressed) move.y = 1.0f;
-
-		//make it so that moving diagonally doesn't go faster:
-		if (move != glm::vec2(0.0f)) move = glm::normalize(move) * PlayerSpeed * elapsed;
-
-		glm::mat4x3 frame = camera->transform->make_local_to_parent();
-		glm::vec3 right = frame[0];
-		//glm::vec3 up = frame[1];
-		glm::vec3 forward = -frame[2];
-
-		camera->transform->position += move.x * right + move.y * forward;
-	}
-
-	//reset button press counters:
-	left.downs = 0;
-	right.downs = 0;
-	up.downs = 0;
-	down.downs = 0;
 }
 
 void BouncyCar::draw(glm::uvec2 const& drawable_size) {
@@ -352,23 +273,31 @@ void BouncyCar::draw(glm::uvec2 const& drawable_size) {
 		));
 
 		constexpr float H = 0.09f;
-		lines.draw_text(scoreText,
+		float ofs = 2.0f / drawable_size.y;
+		lines.draw_text("Press SPACE bar to make the car FLYYYY",
 			glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text(scoreText,
+		lines.draw_text("Press SPACE bar to make the car FLYYYY",
 			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + +0.1f * H + ofs, 0.0),
+			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+
+		lines.draw_text(scoreText,
+			glm::vec3(aspect * 0.4f, -0.4f + 0.1f * H, 0.0),
+			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+			glm::u8vec4(0x00, 0x00, 0x00, 0x00));		
+		lines.draw_text(scoreText,
+			glm::vec3(aspect  * 0.4f, -0.4f + 0.1f * H + ofs, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			textColor);
 
 		lines.draw_text(performanceText,
-			glm::vec3(-aspect + 1.1f * H, -1.0 + 1.1f * H, 0.0),
+			glm::vec3(aspect * 0.4f, -0.4f + 2.1f * H, 0.0),
 			glm::vec3(2.0f * H, 0.0f, 0.0f), glm::vec3(0.0f, 2.0f * H, 0.0f),
 			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-		ofs = 2.0f / drawable_size.y;
 		lines.draw_text(performanceText,
-			glm::vec3(-aspect + 1.1f * H + ofs, -1.0 + 1.1f * H + ofs, 0.0),
+			glm::vec3(aspect * 0.4f + ofs, -0.4f + 2.1f * H + ofs, 0.0),
 			glm::vec3(2.0f * H, 0.0f, 0.0f), glm::vec3(0.0f, 2.0f * H, 0.0f),
 			textColor);
 	}

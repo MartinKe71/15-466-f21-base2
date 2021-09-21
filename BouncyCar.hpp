@@ -23,7 +23,7 @@ struct BouncyCar: Mode {
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
 		uint8_t released = 0;
-	} left, right, down, up, space;
+	} space;
 
 	struct GameCar {
 		Scene::Transform* transform = nullptr;
@@ -31,13 +31,14 @@ struct BouncyCar: Mode {
 		glm::vec3 rotatingAxis;
 		float angularSpeed;
 		float jumpTime = 0.0f;
-		uint8_t bounceNum = 0;
-		uint8_t totalDowns = 0;
+		float jumpStart = 0.0f;
+		uint16_t bounceNum = 0;
+		uint16_t totalDowns = 0;
 		bool isGround = true;
 	} gameCar;
 
 	uint16_t score = 0;
-	std::string scoreText = "Current Score: 0";
+	std::string scoreText = "Flying Distance: 0";
 	std::string performanceText = "C";
 	glm::u8vec4 textColor = glm::u8vec4(0xff, 0xff, 0xff, 0x00);
 
@@ -58,4 +59,5 @@ struct BouncyCar: Mode {
 
 	//help functions
 	void BounceCar();
+	void CalculateScore();
 };
