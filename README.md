@@ -1,7 +1,7 @@
 # Bouncy Car
 Author: Tianrun Ke
 
-Design: You need to get this car moving. But not simply drive it, you need to bouce it forward!
+Design: You need to get this car moving. But not simply drive it, you need to bouce it forward! Everytime you bounce the car up, the car would rotate about a random axis(it doesn't make sense, but it looks funny).
 Screen Shot:
 
 ![Screen Shot](screenshot.png)
