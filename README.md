@@ -1,18 +1,15 @@
-# (TODO: your game's title)
+# Bouncy Car
+Author: Tianrun Ke
 
-Author: (TODO: your name)
-
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
-
+Design: You need to get this car moving. But not simply drive it, you need to bouce it forward!
 Screen Shot:
 
 ![Screen Shot](screenshot.png)
 
 How To Play:
 
-(TODO: describe the controls and (if needed) goals/strategy.)
+Press space bar to bounce the car up. You can press space bar even when the car is <b>still</b> in the air so that you can keep the car up and go much further.
 
-Sources: (TODO: list a source URL for any assets you did not create yourself. Make sure you have a license for the asset.)
+Sources: None
 
 This game was built with [NEST](NEST.md).
-
